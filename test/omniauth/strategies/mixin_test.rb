@@ -14,7 +14,7 @@ class MixinStrategyTest < Minitest::Test
   end
 
   def test_has_correct_site_url
-    assert_equal "https://mixin.one", @strategy.options.client_options.site
+    assert_equal "https://api.mixin.one", @strategy.options.client_options.site
   end
 
   def test_has_correct_authorize_url

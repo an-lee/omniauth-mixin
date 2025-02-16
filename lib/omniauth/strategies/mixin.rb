@@ -11,7 +11,7 @@ module OmniAuth
       option :name, "mixin"
 
       option :client_options, {
-        site: "https://mixin.one",
+        site: "https://api.mixin.one",
         authorize_url: "https://mixin.one/oauth/authorize",
         token_url: "https://api.mixin.one/oauth/token"
       }

@@ -74,4 +74,27 @@ class MixinIntegrationTest < Minitest::Test
     assert_includes [400, 401, 202], response.status
     assert parsed_response.key?("error")
   end
+
+  def test_raw_info
+    skip "Missing Mixin credentials for integration tests" unless credentials_present?
+
+    setup_strategy_with_access_token
+    info = @strategy.raw_info
+
+    assert info, "Raw info should not be nil"
+    assert info["user_id"], "Raw info should contain user_id"
+    assert info["full_name"], "Raw info should contain full_name"
+    assert info["identity_number"], "Raw info should contain identity_number"
+  end
+
+  private
+
+  def setup_strategy_with_access_token
+    access_token = OAuth2::AccessToken.new(
+      @strategy.client,
+      @access_token,
+      { token_type: "Bearer" }
+    )
+    @strategy.instance_variable_set(:@access_token, access_token)
+  end
 end
