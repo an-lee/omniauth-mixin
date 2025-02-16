@@ -3,8 +3,11 @@
 require "test_helper"
 require "omniauth-oauth2"
 require "json"
+require_relative "../test_helpers/mixin_api_helpers"
 
 class MixinIntegrationTest < Minitest::Test
+  include MixinApiHelpers
+
   def setup
     # Load credentials from environment variables or a config file
     @client_id = ENV["MIXIN_CLIENT_ID"]
@@ -64,51 +67,11 @@ class MixinIntegrationTest < Minitest::Test
     end
   end
 
-  private
-
-  def credentials_present?
-    @client_id && @client_secret && @access_token
-  end
-
-  def make_api_request(endpoint)
-    conn = Faraday.new(url: "https://api.mixin.one") do |faraday|
-      faraday.headers["Authorization"] = "Bearer #{@access_token}"
-      faraday.headers["Content-Type"] = "application/json"
-      faraday.adapter Faraday.default_adapter
-    end
-
-    conn.get(endpoint)
-  end
-
-  def authenticate_with_token
-    access_token = create_access_token
-    mock_raw_info_method(access_token)
-    @strategy
-  end
-
-  def create_access_token
-    OAuth2::AccessToken.new(
-      @strategy.client,
-      @access_token,
-      { "token_type" => "Bearer" }
-    )
-  end
-
-  def mock_raw_info_method(access_token)
-    # Store the connection creation logic in a local variable
-    conn = create_faraday_connection(access_token.token)
-
-    @strategy.define_singleton_method(:raw_info) do
-      response = conn.get("/me")
-      JSON.parse(response.body)["data"]
-    end
-  end
-
-  def create_faraday_connection(token)
-    Faraday.new(url: "https://api.mixin.one") do |faraday|
-      faraday.headers["Authorization"] = "Bearer #{token}"
-      faraday.headers["Content-Type"] = "application/json"
-      faraday.adapter Faraday.default_adapter
-    end
+  def test_token_url_validity
+    skip "Missing Mixin credentials for integration tests" unless credentials_present?
+    response = exchange_token_request
+    parsed_response = JSON.parse(response.body)
+    assert_includes [400, 401, 202], response.status
+    assert parsed_response.key?("error")
   end
 end

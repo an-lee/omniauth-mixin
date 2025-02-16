@@ -2,6 +2,8 @@
 
 require "test_helper"
 require "omniauth-oauth2"
+require "faraday"
+require "json"
 
 class MixinStrategyTest < Minitest::Test
   def setup
