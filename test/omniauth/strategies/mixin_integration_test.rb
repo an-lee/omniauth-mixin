@@ -81,25 +81,34 @@ class MixinIntegrationTest < Minitest::Test
   end
 
   def authenticate_with_token
-    # Create a mock access token
-    access_token = OAuth2::AccessToken.new(
+    access_token = create_access_token
+    mock_raw_info_method(access_token)
+    @strategy
+  end
+
+  def create_access_token
+    OAuth2::AccessToken.new(
       @strategy.client,
       @access_token,
       { "token_type" => "Bearer" }
     )
+  end
 
-    # Mock the raw_info method to return actual API data
+  def mock_raw_info_method(access_token)
+    # Store the connection creation logic in a local variable
+    conn = create_faraday_connection(access_token.token)
+
     @strategy.define_singleton_method(:raw_info) do
-      conn = Faraday.new(url: "https://api.mixin.one") do |faraday|
-        faraday.headers["Authorization"] = "Bearer #{access_token.token}"
-        faraday.headers["Content-Type"] = "application/json"
-        faraday.adapter Faraday.default_adapter
-      end
-
       response = conn.get("/me")
       JSON.parse(response.body)["data"]
     end
+  end
 
-    @strategy
+  def create_faraday_connection(token)
+    Faraday.new(url: "https://api.mixin.one") do |faraday|
+      faraday.headers["Authorization"] = "Bearer #{token}"
+      faraday.headers["Content-Type"] = "application/json"
+      faraday.adapter Faraday.default_adapter
+    end
   end
 end
