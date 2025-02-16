@@ -34,6 +34,17 @@ module OmniAuth
         }
       end
 
+      credentials do
+        hash = {
+          "token" => access_token.token
+        }
+        hash["refresh_token"] = access_token.refresh_token if access_token.refresh_token
+        hash["expires_at"] = access_token.expires_at if access_token.expires_at
+        hash["expires"] = access_token.expires?
+        hash["scope"] = access_token.params["scope"] || options[:scope] || OmniAuth::Mixin.configuration.scope
+        hash
+      end
+
       def build_access_token
         verifier = request.params["code"]
         client.get_token(
