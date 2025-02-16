@@ -24,22 +24,7 @@ class MixinStrategyTest < Minitest::Test
   end
 
   def test_returns_info_hash
-    raw_info = {
-      "user_id" => "12345",
-      "full_name" => "Test User",
-      "identity_number" => "test@example.com",
-      "avatar_url" => "http://example.com/avatar.jpg"
-    }
-
-    @strategy.stubs(:raw_info).returns(raw_info)
-
-    expected_info = {
-      name: "Test User",
-      email: "test@example.com",
-      nickname: "Test User",
-      avatar: "http://example.com/avatar.jpg"
-    }
-
+    @strategy.stubs(:raw_info).returns(mock_user_raw_info)
     assert_equal expected_info, @strategy.info
   end
 
@@ -81,16 +66,49 @@ class MixinStrategyTest < Minitest::Test
     assert true, "Should handle invalid JSON gracefully"
   end
 
-  def test_authorize_params
-    # Mock the required session
-    @strategy.stubs(:session).returns({})
-    @strategy.stubs(:request).returns(
-      stub(
-        params: {},
-        env: {}
-      )
-    )
+  def test_custom_client_options
+    custom_options = {
+      site: "https://custom.mixin.one",
+      authorize_url: "https://custom.mixin.one/oauth/authorize",
+      token_url: "https://custom.api.mixin.one/oauth/token"
+    }
 
+    strategy = OmniAuth::Strategies::Mixin.new(nil, @client_id, @client_secret, client_options: custom_options)
+    assert_equal custom_options[:site], strategy.options.client_options.site
+  end
+
+  private
+
+  def mock_user_raw_info
+    {
+      "user_id" => "12345",
+      "full_name" => "Test User",
+      "identity_number" => "test@example.com",
+      "avatar_url" => "http://example.com/avatar.jpg"
+    }
+  end
+
+  def expected_info
+    {
+      name: "Test User",
+      email: "test@example.com",
+      nickname: "Test User",
+      avatar: "http://example.com/avatar.jpg"
+    }
+  end
+end
+
+class MixinOAuthTest < Minitest::Test
+  def setup
+    @client_id = "test_client_id"
+    @client_secret = "test_client_secret"
+    @options = {}
+    @strategy = OmniAuth::Strategies::Mixin.new(nil, @client_id, @client_secret, @options)
+  end
+
+  def test_authorize_params
+    @strategy.stubs(:session).returns({})
+    @strategy.stubs(:request).returns(stub(params: {}, env: {}))
     @strategy.options[:authorize_params] = { scope: "PROFILE:READ" }
     assert_equal "PROFILE:READ", @strategy.authorize_params[:scope]
   end
@@ -101,28 +119,10 @@ class MixinStrategyTest < Minitest::Test
   end
 
   def test_callback_url
-    # Mock the required Rack environment
     @strategy.stubs(:request).returns(
-      stub(
-        scheme: "https",
-        url: "https://example.com",
-        path: "/auth/mixin/callback",
-        query_string: "",
-        env: {}
-      )
+      stub(scheme: "https", url: "https://example.com",
+           path: "/auth/mixin/callback", query_string: "", env: {})
     )
-
     assert_match %r{/auth/mixin/callback}, @strategy.callback_url
-  end
-
-  def test_custom_client_options
-    custom_options = {
-      site: "https://custom.mixin.one",
-      authorize_url: "https://custom.mixin.one/oauth/authorize",
-      token_url: "https://custom.api.mixin.one/oauth/token"
-    }
-
-    strategy = OmniAuth::Strategies::Mixin.new(nil, @client_id, @client_secret, client_options: custom_options)
-    assert_equal custom_options[:site], strategy.options.client_options.site
   end
 end
