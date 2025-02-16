@@ -97,7 +97,13 @@ module OmniAuth
 
       def authorize_params
         super.tap do |params|
-          params[:state] = SecureRandom.hex(16)
+          custom_state = request.params["state"]
+          # Combine custom state with random data
+          params[:state] = if custom_state
+                             "#{custom_state}_#{SecureRandom.hex(8)}"
+                           else
+                             SecureRandom.hex(16)
+                           end
           session["omniauth.state"] = params[:state]
         end
       end
