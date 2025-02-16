@@ -1,0 +1,93 @@
+PATH
+  remote: .
+  specs:
+    omniauth-mixin (0.1.0)
+      omniauth (~> 2.0)
+      omniauth-oauth2 (~> 1.8)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ast (2.4.2)
+    base64 (0.2.0)
+    bigdecimal (3.1.9)
+    faraday (2.12.2)
+      faraday-net_http (>= 2.0, < 3.5)
+      json
+      logger
+    faraday-net_http (3.4.0)
+      net-http (>= 0.5.0)
+    hashie (5.0.0)
+    json (2.10.1)
+    jwt (2.10.1)
+      base64
+    language_server-protocol (3.17.0.4)
+    lint_roller (1.1.0)
+    logger (1.6.6)
+    minitest (5.25.4)
+    multi_xml (0.7.1)
+      bigdecimal (~> 3.1)
+    net-http (0.6.0)
+      uri
+    oauth2 (2.0.9)
+      faraday (>= 0.17.3, < 3.0)
+      jwt (>= 1.0, < 3.0)
+      multi_xml (~> 0.5)
+      rack (>= 1.2, < 4)
+      snaky_hash (~> 2.0)
+      version_gem (~> 1.1)
+    omniauth (2.1.2)
+      hashie (>= 3.4.6)
+      rack (>= 2.2.3)
+      rack-protection
+    omniauth-oauth2 (1.8.0)
+      oauth2 (>= 1.4, < 3)
+      omniauth (~> 2.0)
+    parallel (1.26.3)
+    parser (3.3.7.1)
+      ast (~> 2.4.1)
+      racc
+    racc (1.8.1)
+    rack (3.1.10)
+    rack-protection (4.1.1)
+      base64 (>= 0.1.0)
+      logger (>= 1.6.0)
+      rack (>= 3.0.0, < 4)
+    rainbow (3.1.1)
+    rake (13.2.1)
+    regexp_parser (2.10.0)
+    rubocop (1.72.1)
+      json (~> 2.3)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.1.0)
+      parallel (~> 1.10)
+      parser (>= 3.3.0.2)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 2.9.3, < 3.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 2.4.0, < 4.0)
+    rubocop-ast (1.38.0)
+      parser (>= 3.3.1.0)
+    ruby-progressbar (1.13.0)
+    snaky_hash (2.0.1)
+      hashie
+      version_gem (~> 1.1, >= 1.1.1)
+    unicode-display_width (3.1.4)
+      unicode-emoji (~> 4.0, >= 4.0.4)
+    unicode-emoji (4.0.4)
+    uri (1.0.2)
+    version_gem (1.1.4)
+
+PLATFORMS
+  ruby
+  x86_64-linux
+
+DEPENDENCIES
+  minitest (~> 5.16)
+  omniauth-mixin!
+  rake (~> 13.0)
+  rubocop (~> 1.21)
+
+BUNDLED WITH
+   2.5.23
