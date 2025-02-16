@@ -40,8 +40,10 @@ module OmniAuth
           { redirect_uri: callback_url }.merge(token_params.to_hash(symbolize_keys: true)),
           deep_symbolize(options.auth_token_params || {})
         )
-      rescue OAuth2::Error => e
+      rescue ::OAuth2::Error => e
         handle_token_error(e)
+      rescue StandardError => e
+        raise OmniAuth::Strategies::OAuth2::Error, e.message
       end
 
       def raw_info
@@ -83,17 +85,22 @@ module OmniAuth
 
       def handle_token_error(error)
         if error.response&.body
-          parsed = JSON.parse(error.response.body)
-          if parsed["data"] && parsed["data"]["access_token"]
-            return OAuth2::AccessToken.new(
-              client,
-              parsed["data"]["access_token"],
-              {
-                refresh_token: parsed["data"]["refresh_token"],
-                expires_in: parsed["data"]["expires_in"],
-                token_type: parsed["data"]["token_type"] || "Bearer"
-              }
-            )
+          begin
+            parsed = JSON.parse(error.response.body)
+            if parsed["data"] && parsed["data"]["access_token"]
+              return ::OAuth2::AccessToken.new(
+                client,
+                parsed["data"]["access_token"],
+                {
+                  refresh_token: parsed["data"]["refresh_token"],
+                  expires_in: parsed["data"]["expires_in"],
+                  token_type: parsed["data"]["token_type"] || "Bearer"
+                }
+              )
+            end
+          rescue JSON::ParserError
+            # Handle invalid JSON response
+            raise OmniAuth::Strategies::OAuth2::Error, error.response.body
           end
         end
         raise error
