@@ -40,10 +40,10 @@ module OmniAuth
           { redirect_uri: callback_url }.merge(token_params.to_hash(symbolize_keys: true)),
           deep_symbolize(options.auth_token_params || {})
         )
+      rescue StandardError => e
+        raise ::OAuth2::Error, e.message
       rescue ::OAuth2::Error => e
         handle_token_error(e)
-      rescue StandardError => e
-        raise OmniAuth::Strategies::OAuth2::Error, e.message
       end
 
       def raw_info
@@ -100,7 +100,7 @@ module OmniAuth
             end
           rescue JSON::ParserError
             # Handle invalid JSON response
-            raise OmniAuth::Strategies::OAuth2::Error, error.response.body
+            raise ::OAuth2::Error, error.response.body
           end
         end
         raise error
