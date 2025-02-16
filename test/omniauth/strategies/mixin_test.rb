@@ -114,6 +114,21 @@ class MixinStrategyTest < Minitest::Test
     assert_equal auth_params[:state], session["omniauth.state"]
   end
 
+  def test_authorize_params_with_empty_state
+    session = {}
+    request = stub("Request", params: { "state" => "   " })
+
+    strategy = OmniAuth::Strategies::Mixin.new(nil, "client_id", "client_secret")
+    strategy.stubs(:session).returns(session)
+    strategy.stubs(:request).returns(request)
+
+    auth_params = strategy.authorize_params
+
+    # Verify empty state is treated as no state (32-character hex)
+    assert_match(/^[a-f0-9]{32}$/, auth_params[:state])
+    assert_equal auth_params[:state], session["omniauth.state"]
+  end
+
   def test_valid_request_with_matching_state
     state = "test_state_123"
     session = { "omniauth.state" => state }

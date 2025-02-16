@@ -98,8 +98,8 @@ module OmniAuth
       def authorize_params
         super.tap do |params|
           custom_state = request.params["state"]
-          # Combine custom state with random data
-          params[:state] = if custom_state
+          # Combine custom state with random data, ignore empty strings
+          params[:state] = if custom_state && !custom_state.strip.empty?
                              "#{custom_state}_#{SecureRandom.hex(8)}"
                            else
                              SecureRandom.hex(16)
