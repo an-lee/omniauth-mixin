@@ -3,6 +3,7 @@
 require "omniauth-oauth2"
 require "json"
 require "uri"
+require "securerandom"
 
 module OmniAuth
   module Strategies
@@ -35,7 +36,7 @@ module OmniAuth
 
       def build_access_token
         verifier = request.params["code"]
-        @access_token = client.get_token(
+        client.get_token(
           {
             client_id: options.client_id,
             client_secret: options.client_secret,
@@ -45,13 +46,9 @@ module OmniAuth
           }
         )
       rescue ::OAuth2::Error => e
-        raise e
+        raise e # Simply re-raise the error for testing purposes
       rescue StandardError => e
         raise ::OAuth2::Error, e.message
-      end
-
-      def access_token
-        @access_token ||= build_access_token
       end
 
       def raw_info
@@ -69,11 +66,29 @@ module OmniAuth
       end
 
       def client
-        ::OmniAuth::Strategies::Mixin::Client.new(
+        @client ||= ::OmniAuth::Strategies::Mixin::Client.new(
           options.client_id,
           options.client_secret,
-          deep_symbolize(options.client_options)
+          deep_symbolize(options.client_options).merge(
+            connection_opts: {
+              request: { timeout: 5, open_timeout: 2 }
+            }
+          )
         )
+      end
+
+      def valid_request?
+        return false unless request.params["state"]
+        return false unless session["omniauth.state"]
+
+        request.params["state"] == session["omniauth.state"]
+      end
+
+      def authorize_params
+        super.tap do |params|
+          params[:state] = SecureRandom.hex(16)
+          session["omniauth.state"] = params[:state]
+        end
       end
 
       private

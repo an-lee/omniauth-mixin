@@ -1,6 +1,19 @@
 require:
   - rubocop-minitest
   - rubocop-rake
+  - rubocop-performance
+  - rubocop-thread_safety
+
+Style/Documentation:
+  Enabled: true
+
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "*.gemspec"
+
+Performance/StringReplacement:
+  Enabled: true
 
 AllCops:
   TargetRubyVersion: 3.0

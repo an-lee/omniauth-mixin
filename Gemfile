@@ -16,5 +16,13 @@ group :development, :test do
   gem "faraday", "~> 2.0"
   gem "mocha", "~> 2.1"
   gem "rubocop-minitest"
+  gem "rubocop-performance"
   gem "rubocop-rake"
+  gem "rubocop-thread_safety"
+  gem "securerandom"
+end
+
+group :test do
+  gem "vcr"
+  gem "webmock"
 end

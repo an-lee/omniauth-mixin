@@ -4,3 +4,13 @@ module Omniauth
     # See the writing guide of rbs: https://github.com/ruby/rbs#guides
   end
 end
+
+module OmniAuth
+  module Strategies
+    class Mixin < OAuth2
+      def build_access_token: () -> OAuth2::AccessToken
+      def raw_info: () -> Hash[String, untyped]
+      def callback_url: () -> String
+    end
+  end
+end
