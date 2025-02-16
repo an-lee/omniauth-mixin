@@ -11,6 +11,7 @@ GEM
     ast (2.4.2)
     base64 (0.2.0)
     bigdecimal (3.1.9)
+    dotenv (2.8.1)
     faraday (2.12.2)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -87,6 +88,8 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  dotenv (~> 2.8)
+  faraday (~> 2.0)
   minitest (~> 5.16)
   mocha (~> 2.1)
   omniauth-mixin!

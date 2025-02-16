@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "omniauth-oauth2"
+require "json"
 
 module OmniAuth
   module Strategies
@@ -9,12 +10,12 @@ module OmniAuth
       option :name, "mixin"
 
       option :client_options, {
-        site: "https://mixin.one",
+        site: "https://api.mixin.one",
         authorize_url: "https://mixin.one/oauth/authorize",
         token_url: "https://api.mixin.one/oauth/authorize"
       }
 
-      uid { raw_info["user_id"] }
+      uid { raw_info&.dig("user_id") }
 
       info do
         {
@@ -32,7 +33,10 @@ module OmniAuth
       end
 
       def raw_info
-        @raw_info ||= access_token.get("/me").parsed
+        @raw_info ||= begin
+          response = access_token.get("/me")
+          JSON.parse(response.body)["data"]
+        end
       end
     end
   end
