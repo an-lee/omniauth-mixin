@@ -20,7 +20,7 @@ class MixinStrategyTest < Minitest::Test
   end
 
   def test_has_correct_token_url
-    assert_equal "https://api.mixin.one/oauth/authorize", @strategy.options.client_options.token_url
+    assert_equal "https://api.mixin.one/oauth/token", @strategy.options.client_options.token_url
   end
 
   def test_returns_info_hash

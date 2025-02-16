@@ -13,7 +13,7 @@ module OmniAuth
       option :client_options, {
         site: "https://mixin.one",
         authorize_url: "https://mixin.one/oauth/authorize",
-        token_url: "https://api.mixin.one/oauth/authorize"
+        token_url: "https://api.mixin.one/oauth/token"
       }
 
       uid { raw_info&.dig("user_id") }
