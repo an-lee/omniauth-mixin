@@ -35,7 +35,5 @@ Gem::Specification.new do |spec|
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
 
-  spec.add_development_dependency "dotenv", "~> 2.8"
-  spec.add_development_dependency "faraday", "~> 2.0"
-  spec.add_development_dependency "mocha", "~> 2.1"
+  spec.metadata["rubygems_mfa_required"] = "true"
 end

@@ -27,6 +27,7 @@ class MixinStrategyTest < Minitest::Test
 
   def test_returns_info_hash
     @strategy.stubs(:raw_info).returns(mock_user_raw_info)
+
     assert_equal expected_info, @strategy.info
   end
 
@@ -76,6 +77,7 @@ class MixinStrategyTest < Minitest::Test
     }
 
     strategy = OmniAuth::Strategies::Mixin.new(nil, @client_id, @client_secret, client_options: custom_options)
+
     assert_equal custom_options[:site], strategy.options.client_options.site
   end
 
@@ -112,11 +114,13 @@ class MixinOAuthTest < Minitest::Test
     @strategy.stubs(:session).returns({})
     @strategy.stubs(:request).returns(stub(params: {}, env: {}))
     @strategy.options[:authorize_params] = { scope: "PROFILE:READ" }
+
     assert_equal "PROFILE:READ", @strategy.authorize_params[:scope]
   end
 
   def test_token_params
     @strategy.options[:token_params] = { grant_type: "authorization_code" }
+
     assert_equal "authorization_code", @strategy.token_params[:grant_type]
   end
 
@@ -125,6 +129,7 @@ class MixinOAuthTest < Minitest::Test
       stub(scheme: "https", url: "https://example.com",
            path: "/auth/mixin/callback", query_string: "", env: {})
     )
+
     assert_match %r{/auth/mixin/callback}, @strategy.callback_url
   end
 end

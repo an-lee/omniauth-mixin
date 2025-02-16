@@ -14,6 +14,7 @@ module Omniauth
 
     def test_client_options
       strategy = OmniAuth::Strategies::Mixin.new(nil)
+
       assert_equal "https://api.mixin.one", strategy.options.client_options.site
       assert_equal "https://mixin.one/oauth/authorize", strategy.options.client_options.authorize_url
       assert_equal "https://api.mixin.one/oauth/token", strategy.options.client_options.token_url

@@ -66,4 +66,11 @@ module MixinApiHelpers
       grant_type: "authorization_code"
     }
   end
+
+  def authorization_code
+    # This would typically be obtained through the OAuth flow
+    # For testing purposes, you might want to implement a way to get a valid code
+    # or mock this response
+    raise NotImplementedError, "Implement this method to get a valid authorization code for testing"
+  end
 end

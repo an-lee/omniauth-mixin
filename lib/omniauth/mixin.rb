@@ -2,6 +2,7 @@
 
 require_relative "mixin/version"
 require "omniauth/strategies/mixin"
+require "omniauth/strategies/mixin/client"
 
 module Omniauth
   module Mixin

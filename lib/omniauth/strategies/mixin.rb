@@ -33,18 +33,37 @@ module OmniAuth
         }
       end
 
+      def build_access_token
+        verifier = request.params["code"]
+        client.auth_code.get_token(
+          verifier,
+          { redirect_uri: callback_url }.merge(token_params.to_hash(symbolize_keys: true)),
+          deep_symbolize(options.auth_token_params || {})
+        )
+      rescue OAuth2::Error => e
+        handle_token_error(e)
+      end
+
       def raw_info
         @raw_info ||= begin
           response = access_token.get("/me")
-          JSON.parse(response.body)["data"]
-        rescue ::OAuth2::Error, JSON::ParserError
-          nil
+          parse_nested_response(response)
+        rescue ::OAuth2::Error, JSON::ParserError => e
+          handle_raw_info_error(e)
         end
       end
 
       # Override callback_url to use modern URI parsing
       def callback_url
         full_host + callback_path
+      end
+
+      def client
+        ::OmniAuth::Strategies::Mixin::Client.new(
+          options.client_id,
+          options.client_secret,
+          deep_symbolize(options.client_options)
+        )
       end
 
       private
@@ -55,6 +74,40 @@ module OmniAuth
         uri.query = nil
         uri.fragment = nil
         uri.to_s
+      end
+
+      def parse_nested_response(response)
+        parsed = JSON.parse(response.body)
+        parsed["data"] || {}
+      end
+
+      def handle_token_error(error)
+        if error.response&.body
+          parsed = JSON.parse(error.response.body)
+          if parsed["data"] && parsed["data"]["access_token"]
+            return OAuth2::AccessToken.new(
+              client,
+              parsed["data"]["access_token"],
+              {
+                refresh_token: parsed["data"]["refresh_token"],
+                expires_in: parsed["data"]["expires_in"],
+                token_type: parsed["data"]["token_type"] || "Bearer"
+              }
+            )
+          end
+        end
+        raise error
+      end
+
+      def handle_raw_info_error(error)
+        log(:error, "Failed to get user info: #{error.message}")
+        nil
+      end
+
+      def deep_symbolize(hash)
+        hash.each_with_object({}) do |(key, value), result|
+          result[key.to_sym] = value.is_a?(Hash) ? deep_symbolize(value) : value
+        end
       end
     end
   end
