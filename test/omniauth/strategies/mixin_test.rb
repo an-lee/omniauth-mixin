@@ -81,6 +81,62 @@ class MixinStrategyTest < Minitest::Test
     assert_equal custom_options[:site], strategy.options.client_options.site
   end
 
+  def test_authorize_params_with_custom_state
+    custom_state = "my_custom_state"
+    session = {}
+    request = stub("Request", params: { "state" => custom_state })
+
+    strategy = OmniAuth::Strategies::Mixin.new(nil, "client_id", "client_secret")
+    strategy.stubs(:session).returns(session)
+    strategy.stubs(:request).returns(request)
+
+    auth_params = strategy.authorize_params
+
+    # Verify the state parameter starts with our custom state
+    assert_match(/^#{custom_state}_[a-f0-9]{16}$/, auth_params[:state])
+    # Verify the state is stored in session
+    assert_equal auth_params[:state], session["omniauth.state"]
+  end
+
+  def test_authorize_params_without_custom_state
+    session = {}
+    request = stub("Request", params: {})
+
+    strategy = OmniAuth::Strategies::Mixin.new(nil, "client_id", "client_secret")
+    strategy.stubs(:session).returns(session)
+    strategy.stubs(:request).returns(request)
+
+    auth_params = strategy.authorize_params
+
+    # Verify the state parameter is a 32-character hex string
+    assert_match(/^[a-f0-9]{32}$/, auth_params[:state])
+    # Verify the state is stored in session
+    assert_equal auth_params[:state], session["omniauth.state"]
+  end
+
+  def test_valid_request_with_matching_state
+    state = "test_state_123"
+    session = { "omniauth.state" => state }
+    request = stub("Request", params: { "state" => state })
+
+    strategy = OmniAuth::Strategies::Mixin.new(nil, "client_id", "client_secret")
+    strategy.stubs(:session).returns(session)
+    strategy.stubs(:request).returns(request)
+
+    assert_predicate strategy, :valid_request?
+  end
+
+  def test_valid_request_with_mismatched_state
+    session = { "omniauth.state" => "original_state" }
+    request = stub("Request", params: { "state" => "different_state" })
+
+    strategy = OmniAuth::Strategies::Mixin.new(nil, "client_id", "client_secret")
+    strategy.stubs(:session).returns(session)
+    strategy.stubs(:request).returns(request)
+
+    refute_predicate strategy, :valid_request?
+  end
+
   private
 
   def mock_user_raw_info

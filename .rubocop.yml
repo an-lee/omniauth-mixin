@@ -1,8 +1,10 @@
 require:
   - rubocop-minitest
   - rubocop-rake
-  - rubocop-performance
   - rubocop-thread_safety
+
+plugins:
+  - rubocop-performance
 
 Style/Documentation:
   Enabled: true
