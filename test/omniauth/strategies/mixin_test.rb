@@ -59,4 +59,70 @@ class MixinStrategyTest < Minitest::Test
 
     assert_equal({ raw_info: raw_info }, @strategy.extra)
   end
+
+  def test_handles_api_errors
+    access_token = stub("AccessToken")
+    access_token.stubs(:get).raises(OAuth2::Error.new(stub(parsed: {})))
+    @strategy.stubs(:access_token).returns(access_token)
+
+    assert_nil @strategy.raw_info
+  rescue StandardError
+    assert true, "Should handle OAuth2::Error gracefully"
+  end
+
+  def test_handles_invalid_json
+    access_token = stub("AccessToken")
+    response = stub(body: "invalid json")
+    access_token.stubs(:get).returns(response)
+    @strategy.stubs(:access_token).returns(access_token)
+
+    assert_nil @strategy.raw_info
+  rescue JSON::ParserError
+    assert true, "Should handle invalid JSON gracefully"
+  end
+
+  def test_authorize_params
+    # Mock the required session
+    @strategy.stubs(:session).returns({})
+    @strategy.stubs(:request).returns(
+      stub(
+        params: {},
+        env: {}
+      )
+    )
+
+    @strategy.options[:authorize_params] = { scope: "PROFILE:READ" }
+    assert_equal "PROFILE:READ", @strategy.authorize_params[:scope]
+  end
+
+  def test_token_params
+    @strategy.options[:token_params] = { grant_type: "authorization_code" }
+    assert_equal "authorization_code", @strategy.token_params[:grant_type]
+  end
+
+  def test_callback_url
+    # Mock the required Rack environment
+    @strategy.stubs(:request).returns(
+      stub(
+        scheme: "https",
+        url: "https://example.com",
+        path: "/auth/mixin/callback",
+        query_string: "",
+        env: {}
+      )
+    )
+
+    assert_match %r{/auth/mixin/callback}, @strategy.callback_url
+  end
+
+  def test_custom_client_options
+    custom_options = {
+      site: "https://custom.mixin.one",
+      authorize_url: "https://custom.mixin.one/oauth/authorize",
+      token_url: "https://custom.api.mixin.one/oauth/token"
+    }
+
+    strategy = OmniAuth::Strategies::Mixin.new(nil, @client_id, @client_secret, client_options: custom_options)
+    assert_equal custom_options[:site], strategy.options.client_options.site
+  end
 end

@@ -2,6 +2,7 @@
 
 require "omniauth-oauth2"
 require "json"
+require "uri"
 
 module OmniAuth
   module Strategies
@@ -10,7 +11,7 @@ module OmniAuth
       option :name, "mixin"
 
       option :client_options, {
-        site: "https://api.mixin.one",
+        site: "https://mixin.one",
         authorize_url: "https://mixin.one/oauth/authorize",
         token_url: "https://api.mixin.one/oauth/authorize"
       }
@@ -36,7 +37,24 @@ module OmniAuth
         @raw_info ||= begin
           response = access_token.get("/me")
           JSON.parse(response.body)["data"]
+        rescue ::OAuth2::Error, JSON::ParserError
+          nil
         end
+      end
+
+      # Override callback_url to use modern URI parsing
+      def callback_url
+        full_host + callback_path
+      end
+
+      private
+
+      def full_host
+        uri = URI.parse(request.url)
+        uri.path = ""
+        uri.query = nil
+        uri.fragment = nil
+        uri.to_s
       end
     end
   end

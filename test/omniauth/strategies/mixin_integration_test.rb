@@ -42,6 +42,28 @@ class MixinIntegrationTest < Minitest::Test
     assert user_data["full_name"], "Should have a name"
   end
 
+  def test_missing_fields
+    skip "Manual test for OAuth flow" unless @access_token
+
+    # Test with minimal user data
+    @strategy.define_singleton_method(:raw_info) do
+      { "user_id" => "12345" } # Minimal data
+    end
+
+    assert @strategy.uid, "Should have a uid even with minimal data"
+    assert_nil @strategy.info[:name], "Should handle missing name"
+  end
+
+  def test_rate_limiting
+    skip "Manual test for OAuth flow" unless @access_token
+
+    # Test rapid requests
+    5.times do
+      response = make_api_request("/me")
+      assert_includes [200, 429], response.status, "Should handle rate limits gracefully"
+    end
+  end
+
   private
 
   def credentials_present?
