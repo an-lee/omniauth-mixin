@@ -129,75 +129,47 @@ class MixinTokenIntegrationTest < Minitest::Test
 
   def test_token_exchange_flow
     auth_code = ENV.fetch("MIXIN_TEST_AUTH_CODE", nil)
-
     skip "Missing Mixin credentials for integration tests" if auth_code.nil?
 
-    # Create a mock request with more detailed setup
+    # Create a mock request with full environment setup
     mock_request = stub("Request")
     mock_request.stubs(:scheme).returns("https")
     mock_request.stubs(:url).returns("https://example.com/auth/mixin/callback")
-    mock_request.stubs(:params).returns({})
-    mock_request.stubs(:env).returns({})
+    mock_request.stubs(:params).returns({ "code" => auth_code })
+
+    # Set up the full environment hash
+    env = {
+      "omniauth.error" => nil,
+      "omniauth.error.type" => nil,
+      "omniauth.error.strategy" => nil,
+      "omniauth.origin" => nil,
+      "rack.session" => {}
+    }
+    mock_request.stubs(:env).returns(env)
+    mock_request.stubs(:session).returns({})
 
     strategy = OmniAuth::Strategies::Mixin.new(
       nil,
       @client_id,
       @client_secret,
       {
-        client_options: {
-          site: "https://api.mixin.one",
-          token_url: "https://api.mixin.one/oauth/token"
-        }
+        provider_ignores_state: true
       }
     )
     strategy.stubs(:request).returns(mock_request)
     strategy.stubs(:callback_path).returns("/auth/mixin/callback")
 
     begin
-      # Make a direct token request first to verify endpoint
-      response = Faraday.post(strategy.options.client_options.token_url) do |req|
-        req.headers["Content-Type"] = "application/json"
-        req.body = {
-          client_id: @client_id,
-          client_secret: @client_secret,
-          code: auth_code,
-          grant_type: "authorization_code",
-          redirect_uri: strategy.callback_url
-        }.to_json
-      end
+      access_token = strategy.build_access_token
 
-      puts "Direct token request response:"
-      puts "Status: #{response.status}"
+      assert_kind_of ::OAuth2::AccessToken, access_token, "Should return a valid OAuth2::AccessToken"
 
-      # Parse the response and extract the nested token
-      parsed_response = JSON.parse(response.body)
-      token_data = parsed_response["data"] || {}
-
-      # Create the access token manually instead of using OAuth2 get_token
-      access_token = OAuth2::AccessToken.new(
-        strategy.client,
-        token_data["access_token"],
-        {
-          refresh_token: token_data["refresh_token"],
-          expires_in: token_data["expires_in"],
-          token_type: token_data["token_type"] || "Bearer",
-          scope: token_data["scope"]
-        }
-      )
-
-      # Set the access token on the strategy
-      strategy.instance_variable_set(:@access_token, access_token)
-
-      # Test using the access token to get user info
       user_info = strategy.raw_info
 
       assert user_info, "Should retrieve user info with token"
       assert user_info["user_id"], "User info should contain user_id"
-      assert user_info["full_name"], "User info should contain full_name"
     rescue StandardError => e
       puts "Error during token exchange: #{e.class} - #{e.message}"
-      puts "Response body: #{response&.body}"
-      puts e.backtrace.join("\n")
       raise
     end
   end

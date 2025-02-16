@@ -12,9 +12,17 @@ module OmniAuth
         def get_token(params, access_token_opts = {}, _extract_access_token = nil)
           response = request(:post, token_url, token_params(params))
           parsed = JSON.parse(response.body)
-          token_data = parsed["data"] || {}
 
-          OAuth2::AccessToken.new(
+          if parsed["error"]
+            error = parsed["error"]
+            raise ::OAuth2::Error,
+                  "Mixin API Error: #{error["description"]} (Status: #{error["status"]}, Code: #{error["code"]})"
+          end
+
+          token_data = parsed["data"]
+          raise ::OAuth2::Error, "Invalid response format from Mixin API: missing data field" unless token_data
+
+          ::OAuth2::AccessToken.new(
             self,
             token_data["access_token"],
             {

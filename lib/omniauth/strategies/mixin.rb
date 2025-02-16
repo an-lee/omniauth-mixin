@@ -35,15 +35,23 @@ module OmniAuth
 
       def build_access_token
         verifier = request.params["code"]
-        client.auth_code.get_token(
-          verifier,
-          { redirect_uri: callback_url }.merge(token_params.to_hash(symbolize_keys: true)),
-          deep_symbolize(options.auth_token_params || {})
+        @access_token = client.get_token(
+          {
+            client_id: options.client_id,
+            client_secret: options.client_secret,
+            code: verifier,
+            grant_type: "authorization_code",
+            redirect_uri: callback_url
+          }
         )
+      rescue ::OAuth2::Error => e
+        raise e
       rescue StandardError => e
         raise ::OAuth2::Error, e.message
-      rescue ::OAuth2::Error => e
-        handle_token_error(e)
+      end
+
+      def access_token
+        @access_token ||= build_access_token
       end
 
       def raw_info
@@ -84,26 +92,8 @@ module OmniAuth
       end
 
       def handle_token_error(error)
-        if error.response&.body
-          begin
-            parsed = JSON.parse(error.response.body)
-            if parsed["data"] && parsed["data"]["access_token"]
-              return ::OAuth2::AccessToken.new(
-                client,
-                parsed["data"]["access_token"],
-                {
-                  refresh_token: parsed["data"]["refresh_token"],
-                  expires_in: parsed["data"]["expires_in"],
-                  token_type: parsed["data"]["token_type"] || "Bearer"
-                }
-              )
-            end
-          rescue JSON::ParserError
-            # Handle invalid JSON response
-            raise ::OAuth2::Error, error.response.body
-          end
-        end
-        raise error
+        error_hash = error.response.is_a?(Hash) ? error.response : JSON.parse(error.response.body)
+        fail!(:invalid_credentials, error_hash)
       end
 
       def handle_raw_info_error(error)
