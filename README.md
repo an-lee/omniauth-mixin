@@ -1,5 +1,7 @@
 # Omniauth::Mixin
 
+[![Ruby Gem](https://github.com/an-lee/omniauth-mixin/actions/workflows/main.yml/badge.svg)](https://github.com/an-lee/omniauth-mixin/actions/workflows/main.yml)
+
 OmniAuth OAuth2 strategy for Mixin authentication.
 
 ## Installation
