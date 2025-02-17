@@ -90,7 +90,7 @@ class MixinBasicIntegrationTest < Minitest::Test
     info = @strategy.raw_info
 
     assert info["user_id"], "Raw info should contain user_id"
-    assert info["full_name"], "Raw info should contain full_name"
+    assert info["name"], "Raw info should contain name"
     assert info["identity_number"], "Raw info should contain identity_number"
   end
 

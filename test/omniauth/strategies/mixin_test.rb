@@ -158,7 +158,8 @@ class MixinStrategyTest < Minitest::Test
     {
       "user_id" => "12345",
       "full_name" => "Test User",
-      "identity_number" => "test@example.com",
+      "email" => "test@example.com",
+      "identity_number" => "1234567890",
       "avatar_url" => "http://example.com/avatar.jpg"
     }
   end
@@ -167,8 +168,8 @@ class MixinStrategyTest < Minitest::Test
     {
       name: "Test User",
       email: "test@example.com",
-      nickname: "Test User",
-      avatar: "http://example.com/avatar.jpg"
+      identity_number: "1234567890",
+      image: "http://example.com/avatar.jpg"
     }
   end
 end
