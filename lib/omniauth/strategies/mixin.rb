@@ -22,9 +22,9 @@ module OmniAuth
       info do
         {
           name: raw_info["full_name"],
-          email: raw_info["identity_number"],
-          nickname: raw_info["full_name"],
-          avatar: raw_info["avatar_url"]
+          email: raw_info["email"],
+          identity_number: raw_info["identity_number"],
+          image: raw_info["avatar_url"]
         }
       end
 
