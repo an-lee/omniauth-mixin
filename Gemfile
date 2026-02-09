@@ -13,7 +13,7 @@ gem "rubocop", "~> 1.21"
 
 group :development, :test do
   gem "dotenv", "~> 2.8"
-  gem "faraday", "~> 2.0"
+  gem "faraday", "~> 2.14"
   gem "mocha", "~> 2.1"
   gem "rubocop-minitest"
   gem "rubocop-performance"
